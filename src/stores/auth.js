@@ -5,8 +5,8 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
+  updateProfile,
 } from "firebase/auth";
-import { writeUserData } from "@/helpers/base";
 
 export const useAuthStore = defineStore("authStore", () => {
   const isLoading = ref(false);
@@ -18,13 +18,13 @@ export const useAuthStore = defineStore("authStore", () => {
 
   const register = async ({ email, password, name }) => {
     isLoading.value = true;
-    const auth = getAuth();
 
     try {
+      const auth = getAuth();
       await createUserWithEmailAndPassword(auth, email, password);
-      const uid = auth.currentUser?.uid;
-
-      writeUserData(uid, email, name);
+      await updateProfile(auth.currentUser, {
+        displayName: name,
+      });
     } finally {
       isLoading.value = false;
     }

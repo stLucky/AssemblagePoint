@@ -20,10 +20,10 @@ const userStore = useUserStore();
 
 const auth = getAuth();
 onAuthStateChanged(auth, (user) => {
-  console.log("onAuthStateChanged", user);
   if (user) {
     authStore.setAuthorized(true);
-    userStore.fetchUser();
+    console.log("onAuthStateChanged", user);
+    userStore.setUser(user);
   } else {
     authStore.setAuthorized(false);
     userStore.clearUser();

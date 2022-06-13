@@ -6,7 +6,7 @@
       >
         <div class="border-r border-gray-300 lg:col-span-1">
           <ul class="overflow-auto">
-            <h2 class="my-3 mb-2 ml-2 text-lg text-gray-600">Chats</h2>
+            <h2 class="my-3 mb-2 ml-2 text-lg text-gray-600">Чаты</h2>
             <li>
               <a
                 class="flex items-center px-3 py-2 text-sm transition duration-150 ease-in-out border-b border-gray-300 cursor-pointer hover:bg-gray-100 focus:outline-none"
@@ -21,38 +21,6 @@
                     >
                   </div>
                   <span class="block ml-2 text-sm text-gray-600">bye</span>
-                </div>
-              </a>
-              <a
-                class="flex items-center px-3 py-2 text-sm transition duration-150 ease-in-out bg-gray-100 border-b border-gray-300 cursor-pointer focus:outline-none"
-              >
-                <div class="w-full pb-2">
-                  <div class="flex justify-between">
-                    <span class="block ml-2 font-semibold text-gray-600"
-                      >Same</span
-                    >
-                    <span class="block ml-2 text-sm text-gray-600"
-                      >50 minutes</span
-                    >
-                  </div>
-                  <span class="block ml-2 text-sm text-gray-600"
-                    >Good night</span
-                  >
-                </div>
-              </a>
-              <a
-                class="flex items-center px-3 py-2 text-sm transition duration-150 ease-in-out border-b border-gray-300 cursor-pointer hover:bg-gray-100 focus:outline-none"
-              >
-                <div class="w-full pb-2">
-                  <div class="flex justify-between">
-                    <span class="block ml-2 font-semibold text-gray-600"
-                      >Emma</span
-                    >
-                    <span class="block ml-2 text-sm text-gray-600">6 hour</span>
-                  </div>
-                  <span class="block ml-2 text-sm text-gray-600"
-                    >Good Morning</span
-                  >
                 </div>
               </a>
             </li>
@@ -100,8 +68,9 @@
               </ul>
             </div>
 
-            <div
+            <form
               class="flex items-center justify-between w-full p-3 border-t border-gray-300"
+              @submit.prevent="handleMessageSend"
             >
               <input
                 type="text"
@@ -109,6 +78,7 @@
                 class="block w-full py-2 pl-4 mx-3 bg-gray-100 rounded-full outline-none focus:text-gray-600"
                 name="message"
                 required
+                v-model="message"
               />
               <button type="submit">
                 <svg
@@ -122,11 +92,44 @@
                   />
                 </svg>
               </button>
-            </div>
+            </form>
           </div>
         </div>
       </div>
     </div>
   </main>
 </template>
-<script setup></script>
+<script setup>
+import { onUnmounted, ref } from "vue";
+import { collection, getFirestore, onSnapshot } from "firebase/firestore";
+
+import { useUserStore } from "@/stores/user";
+import { sendMessage } from "@/helpers/firebase";
+
+const userStore = useUserStore();
+
+const message = ref("");
+const messages = ref([]);
+
+const db = getFirestore();
+const unsubscribeMessages = onSnapshot(
+  collection(db, `room-${userStore.user.uid}`),
+  (querySnapshot) => {
+    messages.value = querySnapshot.docs.map((doc) => doc.data());
+  }
+);
+
+onUnmounted(() => {
+  unsubscribeMessages();
+});
+
+const handleMessageSend = async () => {
+  await sendMessage(
+    userStore.user.uid,
+    userStore.user.displayName,
+    message.value
+  );
+
+  message.value = "";
+};
+</script>

@@ -1,21 +1,29 @@
 import { defineStore } from "pinia";
 import { reactive } from "vue";
-import { getAuth } from "firebase/auth";
-import { getUserData } from "@/helpers/base";
+import { writeUserRole } from "@/helpers/firebase";
 
 export const useUserStore = defineStore("userStore", () => {
-  const user = reactive({});
+  const user = reactive({
+    displayName: "",
+    email: "",
+    uid: "",
+    role: "",
+  });
 
-  const fetchUser = async () => {
-    const auth = getAuth();
-    const uid = auth.currentUser?.uid;
+  const setUser = (value) => {
+    Object.keys(user).forEach((key) => {
+      if (!value[key]) return;
+      user[key] = value[key];
+    });
+  };
 
-    try {
-      const response = await getUserData(uid);
-      Object.assign(user, response);
-    } catch (err) {
-      console.error(err);
-    }
+  const setName = (name) => {
+    user.displayName = name;
+  };
+
+  const setRole = async (role) => {
+    await writeUserRole(user.uid, role);
+    user.role = role;
   };
 
   const clearUser = () => {
@@ -26,7 +34,9 @@ export const useUserStore = defineStore("userStore", () => {
 
   return {
     user,
-    fetchUser,
+    setUser,
+    setName,
+    setRole,
     clearUser,
   };
 });

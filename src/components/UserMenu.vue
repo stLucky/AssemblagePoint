@@ -23,7 +23,7 @@
   </template>
   <div class="flex items-center" v-else>
     <span class="font-bold text-lg">
-      {{ userStore.user.name }}
+      {{ userStore.user.displayName }}
     </span>
     <div class="relative group ml-4">
       <div class="pb-2 cursor-pointer">
