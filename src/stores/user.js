@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { reactive } from "vue";
-import { getDatabase, ref, child, get } from "firebase/database";
 import { getAuth } from "firebase/auth";
+import { getUserData } from "@/helpers/base";
 
 export const useUserStore = defineStore("userStore", () => {
   const user = reactive({});
@@ -9,15 +9,10 @@ export const useUserStore = defineStore("userStore", () => {
   const fetchUser = async () => {
     const auth = getAuth();
     const uid = auth.currentUser?.uid;
-    const dbRef = ref(getDatabase());
 
     try {
-      const snapshot = await get(child(dbRef, `users/${uid}`));
-      if (snapshot.exists()) {
-        Object.assign(user, snapshot.val());
-      } else {
-        console.log("No data available");
-      }
+      const response = await getUserData(uid);
+      Object.assign(user, response);
     } catch (err) {
       console.error(err);
     }

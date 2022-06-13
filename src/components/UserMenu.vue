@@ -20,12 +20,6 @@
     >
       Войти
     </button>
-    <TModal v-model:isVisible="isVisibleRegister">
-      <RegisterForm @close="hideRegisterModal" />
-    </TModal>
-    <TModal v-model:isVisible="isVisibleLogin">
-      <LoginForm @close="hideLoginModal" />
-    </TModal>
   </template>
   <div class="flex items-center" v-else>
     <span class="font-bold text-lg">
@@ -65,6 +59,12 @@
       </div>
     </div>
   </div>
+  <TModal v-model:isVisible="isVisibleRegister">
+    <RegisterForm @close="hideRegisterModal" />
+  </TModal>
+  <TModal v-model:isVisible="isVisibleLogin">
+    <LoginForm @close="hideLoginModal" />
+  </TModal>
 </template>
 <script setup>
 import { ref } from "vue";
@@ -92,6 +92,7 @@ const showLoginModal = () => {
   isVisibleLogin.value = true;
 };
 const hideLoginModal = () => {
+  console.log("hide login modal");
   isVisibleLogin.value = false;
 };
 
