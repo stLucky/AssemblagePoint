@@ -89,6 +89,7 @@ import { useAuthStore } from "@/stores/auth";
 import { useUserStore } from "@/stores/user";
 import { ErrorsInterpreter } from "@/const";
 import TLoader from "./TLoader.vue";
+import { writeUserToDatabase } from "@/helpers/firebase";
 
 const emit = defineEmits(["close"]);
 
@@ -143,7 +144,8 @@ const handleRegisterClick = async () => {
     });
 
     userStore.setName(form.name.value);
-    await userStore.setRole("common");
+    await writeUserToDatabase(userStore.user, "common");
+    userStore.setRole("common");
 
     emit("close");
     router.push({ name: "room" });

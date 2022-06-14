@@ -24,6 +24,9 @@ onAuthStateChanged(auth, (user) => {
     authStore.setAuthorized(true);
     console.log("onAuthStateChanged", user);
     userStore.setUser(user);
+    if (!userStore.user.role) {
+      userStore.getRole();
+    }
   } else {
     authStore.setAuthorized(false);
     userStore.clearUser();

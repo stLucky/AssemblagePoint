@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { reactive } from "vue";
-import { writeUserRole } from "@/helpers/firebase";
+import { getUserFromDatabase } from "@/helpers/firebase";
 
 export const useUserStore = defineStore("userStore", () => {
   const user = reactive({
@@ -21,9 +21,13 @@ export const useUserStore = defineStore("userStore", () => {
     user.displayName = name;
   };
 
-  const setRole = async (role) => {
-    await writeUserRole(user.uid, role);
+  const setRole = (role) => {
     user.role = role;
+  };
+
+  const getRole = async () => {
+    const { role } = await getUserFromDatabase(user.uid);
+    setRole(role);
   };
 
   const clearUser = () => {
@@ -37,6 +41,7 @@ export const useUserStore = defineStore("userStore", () => {
     setUser,
     setName,
     setRole,
+    getRole,
     clearUser,
   };
 });
