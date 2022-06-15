@@ -33,7 +33,7 @@
         </h2>
       </div>
       <div
-        class="relative w-full p-6 overflow-y-auto grow"
+        class="relative w-full p-6 overflow-y-auto grow scrollbar"
         style="max-height: calc(100vh - 260px)"
       >
         <ul class="space-y-2" v-if="messages.length">
@@ -42,6 +42,7 @@
             :class="itemCl(message.uid)"
             v-for="message in messages"
             :key="message.id"
+            :ref="(el) => messagesEl.push(el)"
           >
             <p
               class="relative max-w-xl px-4 py-2 text-gray-600 rounded shadow"
@@ -69,7 +70,7 @@
   </div>
 </template>
 <script setup>
-import { computed, onUnmounted, ref } from "vue";
+import { computed, onUnmounted, ref, watch } from "vue";
 import {
   collection,
   getFirestore,
@@ -94,12 +95,27 @@ const props = defineProps({
 
 const emit = defineEmits(["update:activeRoom"]);
 
+// определяет id комнаты для получения сообщений в зависимости от роли пользователя
 const roomId = computed(() =>
   userStore.user.role === "admin" ? props.activeRoom.uid : userStore.user.uid
 );
 
 const messages = ref([]);
 
+// подскролл к последнему сообщению
+const messagesEl = ref([]);
+watch(
+  messagesEl,
+  () => {
+    const el = messagesEl.value.slice(-1)[0];
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  },
+  { deep: true }
+);
+
+// получаем все сообщения
 const db = getFirestore();
 const q = query(
   collection(db, `users/${roomId.value}/messages`),
@@ -107,7 +123,6 @@ const q = query(
 );
 
 const unsubscribeMessages = onSnapshot(q, (querySnapshot) => {
-  console.log("querySnapshot.docs", querySnapshot.docs);
   messages.value = querySnapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
@@ -117,14 +132,13 @@ onUnmounted(() => {
   unsubscribeMessages();
 });
 
+// задаем стили для своих сообщений
 const isCurrentUser = (uid) => {
   return uid === userStore.user.uid;
 };
-
 const itemCl = computed(
   () => (uid) => isCurrentUser(uid) ? "justify-end" : "justify-start"
 );
-
 const itemInnerCl = computed(() => (uid) => ({
   "bg-gray-100": isCurrentUser(uid),
 }));

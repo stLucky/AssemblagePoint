@@ -12,7 +12,7 @@
     />
     <button
       type="submit"
-      class="transition-all text-gray-500 hover:text-gray-700 disabled:opacity- disabled:pointer-events-none"
+      class="transition-all text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:pointer-events-none"
       :disabled="isDisabled"
     >
       <svg

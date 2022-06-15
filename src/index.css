@@ -1,3 +1,24 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .scrollbar {
+    scrollbar-color: theme('colors.teal.700') theme('colors.gray.300');
+  }
+
+  .scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb {
+    background: theme('colors.teal.700');
+    border-radius: 4px;
+  }
+
+  .scrollbar::-webkit-scrollbar-track {
+    background: theme('colors.gray.300');
+    border-radius: 4px;
+  }
+}
