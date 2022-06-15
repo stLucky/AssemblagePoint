@@ -10,9 +10,13 @@
       name="message"
       v-model="message"
     />
-    <button type="submit">
+    <button
+      type="submit"
+      class="transition-all text-gray-500 hover:text-gray-700 disabled:opacity- disabled:pointer-events-none"
+      :disabled="isDisabled"
+    >
       <svg
-        class="w-5 h-5 text-gray-500 origin-center transform rotate-90"
+        class="w-5 h-5 origin-center transform rotate-90"
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 20 20"
         fill="currentColor"
@@ -25,7 +29,7 @@
   </form>
 </template>
 <script setup>
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useUserStore } from "@/stores/user";
 import { sendMessage } from "@/helpers/firebase";
 
@@ -41,4 +45,6 @@ const handleMessageSend = async () => {
 
   message.value = "";
 };
+
+const isDisabled = computed(() => !message.value.length);
 </script>

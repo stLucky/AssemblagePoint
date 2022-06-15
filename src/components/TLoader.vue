@@ -1,7 +1,7 @@
 <template>
   <svg
     role="status"
-    class="inline mr-2 w-4 h-4 text-gray-200 animate-spin dark:text-gray-600 fill-green-500"
+    class="inline mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-green-500"
     :class="spinnerCl"
     viewBox="0 0 100 101"
     fill="none"
