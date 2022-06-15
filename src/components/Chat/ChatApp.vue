@@ -12,7 +12,10 @@
       <ChatControls />
     </ChatMessages>
   </div>
-  <div class="bg-white h-full w-full flex items-center justify-center" v-else>
+  <div
+    class="bg-white border rounded h-full w-full flex items-center justify-center"
+    v-else
+  >
     <TLoader size="12" />
   </div>
 </template>

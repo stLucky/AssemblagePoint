@@ -7,18 +7,19 @@
           class="flex items-center px-3 py-2 text-sm transition duration-150 ease-in-out border-b border-gray-300 cursor-pointer hover:bg-gray-100 focus:outline-none"
           @click="handleRoomClick(room)"
           :class="roomCl(room.uid)"
+          style="min-height: 65px"
         >
           <div class="w-full pb-2">
             <div class="flex justify-between">
               <span class="block ml-2 font-semibold text-gray-600">{{
                 room.displayName
               }}</span>
-              <span class="block ml-2 text-sm text-gray-600">
-                {{ getLocaleDate(userStore.lastMessage.createdAt) }}
+              <span class="block ml-2 text-sm text-gray-600" v-if="lastMessage">
+                {{ getLocaleDate(lastMessage.createdAt) }}
               </span>
             </div>
-            <span class="block ml-2 text-sm text-gray-600">
-              {{ userStore.lastMessage.text }}
+            <span class="block ml-2 text-sm text-gray-600" v-if="lastMessage">
+              {{ lastMessage.text }}
             </span>
           </div>
         </a>
@@ -31,6 +32,7 @@ import { computed } from "@vue/reactivity";
 import { defineProps, defineEmits } from "vue";
 import { useUserStore } from "@/stores/user";
 import { getLocaleDate } from "@/helpers/utils";
+import { storeToRefs } from "pinia";
 
 const props = defineProps({
   rooms: {
@@ -45,7 +47,7 @@ const props = defineProps({
 
 const emit = defineEmits(["update:activeRoom"]);
 
-const userStore = useUserStore();
+const { lastMessage } = storeToRefs(useUserStore());
 
 const roomCl = computed(() => (uid) => ({
   "bg-gray-100": props.activeRoom.uid === uid,

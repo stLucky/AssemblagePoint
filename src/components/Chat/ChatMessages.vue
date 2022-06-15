@@ -35,6 +35,7 @@
       <div
         class="relative w-full p-6 overflow-y-auto grow scrollbar text-center"
         style="max-height: calc(100vh - 260px)"
+        ref="scrollableBoxEl"
       >
         <template v-if="messages.length">
           <template v-for="(group, key) in groupedMessages" :key="key">
@@ -46,7 +47,7 @@
             </time>
             <ul>
               <li
-                class="flex"
+                class="flex mb-2 last:mb-0"
                 :class="itemCl(message.uid)"
                 v-for="message in group"
                 :key="message.id"
@@ -81,7 +82,7 @@
   </div>
 </template>
 <script setup>
-import { computed, onUnmounted, ref, watch } from "vue";
+import { computed, onBeforeUpdate, onUnmounted, ref, watch } from "vue";
 import {
   collection,
   getFirestore,
@@ -127,16 +128,22 @@ const groupedMessages = computed(() =>
 
 // подскролл к последнему сообщению
 const messagesEl = ref([]);
-watch(
-  messagesEl,
-  () => {
-    const el = messagesEl.value.slice(-1)[0];
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
-    }
-  },
-  { deep: true }
-);
+onBeforeUpdate(() => {
+  messagesEl.value = [];
+});
+const lastEl = computed(() => messagesEl.value[messagesEl.value.length - 1]);
+const scrollableBoxEl = ref(null);
+const scrollToLastEl = () => {
+  if (lastEl.value && scrollableBoxEl.value) {
+    lastEl.value.scrollIntoView({
+      behavior: "smooth",
+    });
+  }
+};
+
+watch([lastEl, scrollableBoxEl], () => {
+  scrollToLastEl();
+});
 
 // получаем все сообщения
 const db = getFirestore();

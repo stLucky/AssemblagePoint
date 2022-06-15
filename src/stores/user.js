@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
 import { getUserFromDatabase } from "@/helpers/firebase";
 
 export const useUserStore = defineStore("userStore", () => {
@@ -36,9 +36,9 @@ export const useUserStore = defineStore("userStore", () => {
     });
   };
 
-  const lastMessage = reactive({});
+  const lastMessage = ref(null);
   const updateLastMessage = (message) => {
-    Object.assign(lastMessage, message);
+    lastMessage.value = message;
   };
 
   return {
