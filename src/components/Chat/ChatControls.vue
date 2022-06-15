@@ -31,19 +31,23 @@
 <script setup>
 import { computed, ref } from "vue";
 import { useUserStore } from "@/stores/user";
-import { sendMessage } from "@/helpers/firebase";
+import { sendMessage, writeLastMessageToUser } from "@/helpers/firebase";
 
 const userStore = useUserStore();
 
 const message = ref("");
 const handleMessageSend = async () => {
-  await sendMessage(
-    userStore.user.uid,
-    userStore.user.displayName,
-    message.value
-  );
+  const options = {
+    uid: userStore.user.uid,
+    displayName: userStore.user.displayName,
+    text: message.value,
+  };
+
+  await sendMessage(options);
 
   message.value = "";
+
+  await writeLastMessageToUser(options);
 };
 
 const isDisabled = computed(() => !message.value.length);

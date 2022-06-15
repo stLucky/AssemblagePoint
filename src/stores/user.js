@@ -36,6 +36,11 @@ export const useUserStore = defineStore("userStore", () => {
     });
   };
 
+  const lastMessage = reactive({});
+  const updateLastMessage = (message) => {
+    Object.assign(lastMessage, message);
+  };
+
   return {
     user,
     setUser,
@@ -43,5 +48,8 @@ export const useUserStore = defineStore("userStore", () => {
     setRole,
     getRole,
     clearUser,
+
+    lastMessage,
+    updateLastMessage,
   };
 });

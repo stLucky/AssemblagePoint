@@ -13,9 +13,13 @@
               <span class="block ml-2 font-semibold text-gray-600">{{
                 room.displayName
               }}</span>
-              <span class="block ml-2 text-sm text-gray-600">25 minutes</span>
+              <span class="block ml-2 text-sm text-gray-600">
+                {{ getLocaleDate(userStore.lastMessage.createdAt) }}
+              </span>
             </div>
-            <span class="block ml-2 text-sm text-gray-600">bye</span>
+            <span class="block ml-2 text-sm text-gray-600">
+              {{ userStore.lastMessage.text }}
+            </span>
           </div>
         </a>
       </li>
@@ -25,6 +29,8 @@
 <script setup>
 import { computed } from "@vue/reactivity";
 import { defineProps, defineEmits } from "vue";
+import { useUserStore } from "@/stores/user";
+import { getLocaleDate } from "@/helpers/utils";
 
 const props = defineProps({
   rooms: {
@@ -38,6 +44,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["update:activeRoom"]);
+
+const userStore = useUserStore();
 
 const roomCl = computed(() => (uid) => ({
   "bg-gray-100": props.activeRoom.uid === uid,

@@ -4,6 +4,7 @@ import {
   addDoc,
   setDoc,
   getDoc,
+  updateDoc,
   doc,
   collection,
   getFirestore,
@@ -29,13 +30,26 @@ export const getUserFromDatabase = async (uid) => {
   return snapshot.exists() ? snapshot.data() : {};
 };
 
-export const sendMessage = async (uid, displayName, text) => {
+const createMessage = (uid, displayName, text) => ({
+  uid,
+  name: displayName,
+  text,
+  createdAt: Date.now(),
+});
+
+export const sendMessage = async ({ uid, displayName, text }) => {
   const db = getFirestore();
-  await addDoc(collection(db, `users/${uid}/messages`), {
-    uid,
-    name: displayName,
-    text,
-    createdAt: Date.now(),
+  const message = createMessage(uid, displayName, text);
+
+  await addDoc(collection(db, `users/${uid}/messages`), message);
+};
+
+export const writeLastMessageToUser = async ({ uid, displayName, text }) => {
+  const db = getFirestore();
+  const message = createMessage(uid, displayName, text);
+
+  await updateDoc(doc(db, `users/${uid}`), {
+    lastMessage: message,
   });
 };
 

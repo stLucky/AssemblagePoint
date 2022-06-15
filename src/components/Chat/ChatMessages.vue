@@ -33,25 +33,36 @@
         </h2>
       </div>
       <div
-        class="relative w-full p-6 overflow-y-auto grow scrollbar"
+        class="relative w-full p-6 overflow-y-auto grow scrollbar text-center"
         style="max-height: calc(100vh - 260px)"
       >
-        <ul class="space-y-2" v-if="messages.length">
-          <li
-            class="flex"
-            :class="itemCl(message.uid)"
-            v-for="message in messages"
-            :key="message.id"
-            :ref="(el) => messagesEl.push(el)"
-          >
-            <p
-              class="relative max-w-xl px-4 py-2 text-gray-600 rounded shadow"
-              :class="itemInnerCl(message.uid)"
+        <template v-if="messages.length">
+          <template v-for="(group, key) in groupedMessages" :key="key">
+            <time
+              :datetime="new Date(+key).toISOString()"
+              class="font-bold text-gray-600"
             >
-              {{ message.text }}
-            </p>
-          </li>
-        </ul>
+              {{ getLocaleDate(+key) }}
+            </time>
+            <ul>
+              <li
+                class="flex"
+                :class="itemCl(message.uid)"
+                v-for="message in group"
+                :key="message.id"
+                :ref="(el) => messagesEl.push(el)"
+              >
+                <p
+                  class="relative max-w-xl px-4 py-2 text-gray-600 rounded shadow"
+                  :class="itemInnerCl(message.uid)"
+                >
+                  {{ message.text }}
+                </p>
+              </li>
+            </ul>
+          </template>
+        </template>
+
         <p
           class="w-full h-full text-gray-600 flex items-center justify-center"
           v-else
@@ -79,6 +90,8 @@ import {
   query,
 } from "firebase/firestore";
 
+import { getTimestampDay, getLocaleDate } from "@/helpers/utils";
+
 import { useUserStore } from "@/stores/user";
 import { useMediaQuery } from "@/hooks/media-query";
 
@@ -101,6 +114,16 @@ const roomId = computed(() =>
 );
 
 const messages = ref([]);
+
+const groupedMessages = computed(() =>
+  messages.value.reduce((result, item) => {
+    const date = getTimestampDay(item.createdAt);
+    if (!result[date]) result[date] = [];
+    result[date].push(item);
+
+    return result;
+  }, {})
+);
 
 // подскролл к последнему сообщению
 const messagesEl = ref([]);
@@ -127,6 +150,7 @@ const unsubscribeMessages = onSnapshot(q, (querySnapshot) => {
     id: doc.id,
     ...doc.data(),
   }));
+  userStore.updateLastMessage(messages.value[messages.value.length - 1]);
 });
 onUnmounted(() => {
   unsubscribeMessages();
