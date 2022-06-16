@@ -7,8 +7,10 @@ import {
   signOut,
   updateProfile,
 } from "firebase/auth";
+import { useUserStore } from "@/stores/user";
 
 export const useAuthStore = defineStore("authStore", () => {
+  const userStore = useUserStore();
   const isLoading = ref(false);
 
   const isAuthorized = ref(false);
@@ -25,6 +27,7 @@ export const useAuthStore = defineStore("authStore", () => {
       await updateProfile(auth.currentUser, {
         displayName: name,
       });
+      userStore.setName(name);
     } finally {
       isLoading.value = false;
     }

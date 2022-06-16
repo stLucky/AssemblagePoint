@@ -30,22 +30,38 @@
 </template>
 <script setup>
 import { computed, ref } from "vue";
-import { useUserStore } from "@/stores/user";
-import { sendMessage, writeLastMessageToUser } from "@/helpers/firebase";
 
-const userStore = useUserStore();
+import { sendMessage, writeLastMessageToUser } from "@/helpers/firebase";
+import { useToast } from "vue-toastification";
+import { Errors } from "@/const";
+import { useChat } from "@/hooks/chat";
+
+const props = defineProps({
+  activeRoom: {
+    type: Object,
+    required: true,
+  },
+});
+
+const { userStore, roomId } = useChat(props);
+
+const toast = useToast();
 
 const message = ref("");
 const handleMessageSend = async () => {
   const options = {
+    roomId: roomId.value,
     uid: userStore.user.uid,
     displayName: userStore.user.displayName,
     text: message.value,
   };
 
-  await sendMessage(options);
-
-  message.value = "";
+  try {
+    await sendMessage(options);
+    message.value = "";
+  } catch (err) {
+    toast.error(Errors.COMMON);
+  }
 
   await writeLastMessageToUser(options);
 };

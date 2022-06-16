@@ -1,8 +1,12 @@
 import { defineStore } from "pinia";
 import { reactive, ref } from "vue";
-import { getUserFromDatabase } from "@/helpers/firebase";
+import { getUserFromDatabase, writeUserToDatabase } from "@/helpers/firebase";
+import { useToast } from "vue-toastification";
+import { Errors } from "@/const";
 
 export const useUserStore = defineStore("userStore", () => {
+  const toast = useToast();
+
   const user = reactive({
     displayName: "",
     email: "",
@@ -25,9 +29,24 @@ export const useUserStore = defineStore("userStore", () => {
     user.role = role;
   };
 
-  const getRole = async () => {
-    const { role } = await getUserFromDatabase(user.uid);
-    setRole(role);
+  const writeUser = async () => {
+    try {
+      await writeUserToDatabase(user, "common");
+      setRole("common");
+    } catch (err) {
+      toast.error(Errors.USER);
+    }
+  };
+
+  const getRoleFromDatabase = async () => {
+    try {
+      const { role } = await getUserFromDatabase(user.uid);
+      setRole(role);
+
+      return role;
+    } catch (err) {
+      toast.error(Errors.ROLE);
+    }
   };
 
   const clearUser = () => {
@@ -46,8 +65,9 @@ export const useUserStore = defineStore("userStore", () => {
     setUser,
     setName,
     setRole,
-    getRole,
+    getRoleFromDatabase,
     clearUser,
+    writeUser,
 
     lastMessage,
     updateLastMessage,

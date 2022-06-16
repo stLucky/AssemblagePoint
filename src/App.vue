@@ -19,13 +19,14 @@ const authStore = useAuthStore();
 const userStore = useUserStore();
 
 const auth = getAuth();
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (user) {
-    authStore.setAuthorized(true);
-    console.log("onAuthStateChanged", user);
     userStore.setUser(user);
+    authStore.setAuthorized(true);
+
     if (!userStore.user.role) {
-      userStore.getRole();
+      const role = await userStore.getRoleFromDatabase();
+      if (!role) userStore.writeUser();
     }
   } else {
     authStore.setAuthorized(false);

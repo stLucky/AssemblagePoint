@@ -37,11 +37,11 @@ const createMessage = (uid, displayName, text) => ({
   createdAt: Date.now(),
 });
 
-export const sendMessage = async ({ uid, displayName, text }) => {
+export const sendMessage = async ({ roomId, uid, displayName, text }) => {
   const db = getFirestore();
   const message = createMessage(uid, displayName, text);
 
-  await addDoc(collection(db, `users/${uid}/messages`), message);
+  await addDoc(collection(db, `users/${roomId}/messages`), message);
 };
 
 export const writeLastMessageToUser = async ({ uid, displayName, text }) => {

@@ -63,7 +63,6 @@
             </ul>
           </template>
         </template>
-
         <p
           class="w-full h-full text-gray-600 flex items-center justify-center"
           v-else
@@ -82,7 +81,7 @@
   </div>
 </template>
 <script setup>
-import { computed, onBeforeUpdate, onUnmounted, ref, watch } from "vue";
+import { computed, onBeforeUpdate, ref, watch } from "vue";
 import {
   collection,
   getFirestore,
@@ -93,10 +92,8 @@ import {
 
 import { getTimestampDay, getLocaleDate } from "@/helpers/utils";
 
-import { useUserStore } from "@/stores/user";
 import { useMediaQuery } from "@/hooks/media-query";
-
-const userStore = useUserStore();
+import { useChat } from "@/hooks/chat";
 
 const { isBoundary: isDesktop } = useMediaQuery("(min-width: 1024px)");
 
@@ -105,14 +102,15 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  isVisible: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 const emit = defineEmits(["update:activeRoom"]);
 
-// определяет id комнаты для получения сообщений в зависимости от роли пользователя
-const roomId = computed(() =>
-  userStore.user.role === "admin" ? props.activeRoom.uid : userStore.user.uid
-);
+const { userStore, roomId } = useChat(props);
 
 const messages = ref([]);
 
@@ -145,23 +143,29 @@ watch([lastEl, scrollableBoxEl], () => {
   scrollToLastEl();
 });
 
-// получаем все сообщения
-const db = getFirestore();
-const q = query(
-  collection(db, `users/${roomId.value}/messages`),
-  orderBy("createdAt")
+watch(
+  () => props.isVisible,
+  (val) => {
+    let unsubscribeMessages;
+    if (val) {
+      // получаем все сообщения
+      const db = getFirestore();
+      const q = query(
+        collection(db, `users/${roomId.value}/messages`),
+        orderBy("createdAt")
+      );
+      unsubscribeMessages = onSnapshot(q, (querySnapshot) => {
+        messages.value = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        userStore.updateLastMessage(messages.value[messages.value.length - 1]);
+      });
+    } else {
+      if (unsubscribeMessages) unsubscribeMessages();
+    }
+  }
 );
-
-const unsubscribeMessages = onSnapshot(q, (querySnapshot) => {
-  messages.value = querySnapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
-  userStore.updateLastMessage(messages.value[messages.value.length - 1]);
-});
-onUnmounted(() => {
-  unsubscribeMessages();
-});
 
 // задаем стили для своих сообщений
 const isCurrentUser = (uid) => {

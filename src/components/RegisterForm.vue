@@ -86,16 +86,13 @@ import { computed } from "@vue/reactivity";
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 import { useAuthStore } from "@/stores/auth";
-import { useUserStore } from "@/stores/user";
 import { ErrorsInterpreter } from "@/const";
 import TLoader from "./TLoader.vue";
-import { writeUserToDatabase } from "@/helpers/firebase";
 
 const emit = defineEmits(["close"]);
 
 const router = useRouter();
 const authStore = useAuthStore();
-const userStore = useUserStore();
 const toast = useToast();
 
 const form = reactive({
@@ -142,10 +139,6 @@ const handleRegisterClick = async () => {
       email: form.email.value,
       password: form.password.value,
     });
-
-    userStore.setName(form.name.value);
-    await writeUserToDatabase(userStore.user, "common");
-    userStore.setRole("common");
 
     emit("close");
     router.push({ name: "room" });

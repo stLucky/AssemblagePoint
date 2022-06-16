@@ -2,7 +2,7 @@
   <template v-if="!authStore.isAuthorized">
     <button
       type="button"
-      class="border-2 border-white mr-2 hover:border-gray-400  transition-all px-5 py-2 text-sm leading-5 rounded-full font-semibold text-white"
+      class="border-2 border-white mr-2 hover:border-gray-400 transition-all px-5 py-2 text-sm leading-5 rounded-full font-semibold text-white"
       id="user-menu-button"
       aria-expanded="false"
       aria-haspopup="true"
@@ -101,13 +101,16 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/user";
 import { useAuthStore } from "@/stores/auth";
+import { useToast } from "vue-toastification";
 import TModal from "./TModal.vue";
 import RegisterForm from "./RegisterForm.vue";
 import LoginForm from "./LoginForm.vue";
+import { Errors } from "@/const";
 
 const router = useRouter();
 const authStore = useAuthStore();
 const userStore = useUserStore();
+const toast = useToast();
 
 const isVisibleRegister = ref(false);
 const showRegisterModal = () => {
@@ -131,7 +134,7 @@ const handleLogoutClick = async () => {
     await authStore.logout();
     router.push({ name: "home" });
   } catch (err) {
-    console.log(err);
+    toast.error(Errors.COMMON);
   }
 };
 </script>
