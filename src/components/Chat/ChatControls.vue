@@ -31,7 +31,7 @@
 <script setup>
 import { computed, ref } from "vue";
 
-import { sendMessage, writeLastMessageToUser } from "@/helpers/firebase";
+import { sendMessage } from "@/helpers/firebase";
 import { useToast } from "vue-toastification";
 import { Errors } from "@/const";
 import { useChat } from "@/hooks/chat";
@@ -62,8 +62,6 @@ const handleMessageSend = async () => {
   } catch (err) {
     toast.error(Errors.COMMON);
   }
-
-  await writeLastMessageToUser(options);
 };
 
 const isDisabled = computed(() => !message.value.length);

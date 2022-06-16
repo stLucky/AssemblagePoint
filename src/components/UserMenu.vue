@@ -53,7 +53,7 @@
   </template>
   <div class="flex items-center" v-else>
     <span class="font-bold text-lg">
-      {{ userStore.user.displayName }}
+      {{ user.displayName || user.email }}
     </span>
     <div class="relative group ml-4">
       <div class="pb-2 cursor-pointer">
@@ -109,7 +109,7 @@ import { Errors } from "@/const";
 
 const router = useRouter();
 const authStore = useAuthStore();
-const userStore = useUserStore();
+const { user } = useUserStore();
 const toast = useToast();
 
 const isVisibleRegister = ref(false);
@@ -125,7 +125,6 @@ const showLoginModal = () => {
   isVisibleLogin.value = true;
 };
 const hideLoginModal = () => {
-  console.log("hide login modal");
   isVisibleLogin.value = false;
 };
 

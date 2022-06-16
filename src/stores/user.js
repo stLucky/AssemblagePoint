@@ -3,6 +3,7 @@ import { reactive, ref } from "vue";
 import { getUserFromDatabase, writeUserToDatabase } from "@/helpers/firebase";
 import { useToast } from "vue-toastification";
 import { Errors } from "@/const";
+import { writeLastMessageToDataBase } from "@/helpers/firebase";
 
 export const useUserStore = defineStore("userStore", () => {
   const toast = useToast();
@@ -31,17 +32,22 @@ export const useUserStore = defineStore("userStore", () => {
 
   const writeUser = async () => {
     try {
-      await writeUserToDatabase(user, "common");
-      setRole("common");
+      const role =
+        user.email === "assemblage4point@gmail.com" ? "admin" : "common";
+      await writeUserToDatabase(user, role);
+      setRole(role);
     } catch (err) {
       toast.error(Errors.USER);
     }
   };
 
-  const getRoleFromDatabase = async () => {
+  const setUserFromDatabase = async () => {
     try {
-      const { role } = await getUserFromDatabase(user.uid);
+      const { role, lastMessage } = await getUserFromDatabase(user.uid);
       setRole(role);
+      if (lastMessage) {
+        updateLastMessage(lastMessage);
+      }
 
       return role;
     } catch (err) {
@@ -59,17 +65,26 @@ export const useUserStore = defineStore("userStore", () => {
   const updateLastMessage = (message) => {
     lastMessage.value = message;
   };
+  const writeLastMessageToUser = async (roomId, message) => {
+    try {
+      await writeLastMessageToDataBase(roomId, message);
+
+      updateLastMessage(message);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return {
     user,
     setUser,
     setName,
     setRole,
-    getRoleFromDatabase,
+    setUserFromDatabase,
     clearUser,
     writeUser,
 
     lastMessage,
-    updateLastMessage,
+    writeLastMessageToUser,
   };
 });

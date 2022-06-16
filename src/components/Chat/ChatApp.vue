@@ -8,11 +8,7 @@
       v-model:activeRoom="activeRoom"
       v-show="isVisibleRooms"
     />
-    <ChatMessages
-      v-model:activeRoom="activeRoom"
-      v-show="isVisibleMessages"
-      :isVisible="isVisibleMessages"
-    >
+    <ChatMessages v-model:activeRoom="activeRoom" v-show="isVisibleMessages">
       <ChatControls :activeRoom="activeRoom" />
     </ChatMessages>
   </div>
@@ -25,14 +21,14 @@
   </div>
 </template>
 <script setup>
-import { ref, watch } from "vue";
+import { onUnmounted, ref, watch } from "vue";
 
 import ChatRooms from "./ChatRooms.vue";
 import ChatMessages from "./ChatMessages.vue";
 import ChatControls from "./ChatControls.vue";
 import TLoader from "../TLoader.vue";
 
-import { getUsers } from "@/helpers/firebase";
+import { getUsers, subscribeUsers } from "@/helpers/firebase";
 import { useUserStore } from "@/stores/user";
 import { useMediaQuery } from "@/hooks/media-query";
 import { computed } from "@vue/reactivity";
@@ -60,6 +56,27 @@ const setUsers = async (val) => {
   }
 };
 
+let unsubscribeUsers = null;
+const unwatch = watch(
+  () => userStore.user.role,
+  (val) => {
+    if (!val) return;
+    setUsers(val);
+
+    unsubscribeUsers = subscribeUsers(
+      val === "admin" ? "common" : "admin",
+      (snapshot) => {
+        users.value = snapshot.docs.map((doc) => doc.data());
+      }
+    );
+    unwatch();
+  }
+);
+
+onUnmounted(() => {
+  if (unsubscribeUsers) unsubscribeUsers();
+});
+
 const activeRoom = ref({});
 const hasActiveRoom = computed(() => Object.keys(activeRoom.value).length);
 const isVisibleRooms = computed(
@@ -67,12 +84,5 @@ const isVisibleRooms = computed(
 );
 const isVisibleMessages = computed(
   () => (hasActiveRoom.value && !isDesktop.value) || isDesktop.value
-);
-
-watch(
-  () => userStore.user.role,
-  (val) => {
-    setUsers(val);
-  }
 );
 </script>

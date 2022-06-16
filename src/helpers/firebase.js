@@ -8,9 +8,11 @@ import {
   doc,
   collection,
   getFirestore,
-  getDocs,
   query,
   where,
+  onSnapshot,
+  orderBy,
+  getDocs,
 } from "firebase/firestore";
 
 export const getUid = () => getAuth().currentUser?.uid;
@@ -44,20 +46,66 @@ export const sendMessage = async ({ roomId, uid, displayName, text }) => {
   await addDoc(collection(db, `users/${roomId}/messages`), message);
 };
 
-export const writeLastMessageToUser = async ({ uid, displayName, text }) => {
+export const writeLastMessageToDataBase = async (roomId, lastMessage) => {
   const db = getFirestore();
-  const message = createMessage(uid, displayName, text);
 
-  await updateDoc(doc(db, `users/${uid}`), {
-    lastMessage: message,
+  await updateDoc(doc(db, `users/${roomId}`), {
+    lastMessage,
   });
 };
 
-export const getUsers = async (type) => {
+const getQueryForUsers = (type) => {
   const db = getFirestore();
   const condition = type === "admin" ? "==" : "!=";
-  const q = query(collection(db, "users"), where("role", condition, "admin"));
+  return query(collection(db, "users"), where("role", condition, "admin"));
+};
+
+export const getUsers = async (type) => {
+  const q = getQueryForUsers(type);
   const querySnapshot = await getDocs(q);
 
   return querySnapshot.docs.map((doc) => doc.data());
+};
+
+export const subscribeUsers = (type, cb) => {
+  const q = getQueryForUsers(type);
+
+  return onSnapshot(
+    q,
+    (querySnapshot) => {
+      cb(querySnapshot);
+    },
+    (err) => {
+      console.log(err);
+    }
+  );
+};
+
+const getQueryForMessages = (roomId) => {
+  const db = getFirestore();
+  return query(
+    collection(db, `users/${roomId}/messages`),
+    orderBy("createdAt")
+  );
+};
+
+export const getMessages = async (roomId) => {
+  const q = getQueryForMessages(roomId);
+  const querySnapshot = await getDocs(q);
+
+  return querySnapshot.docs.map((doc) => doc.data());
+};
+
+export const subscribeMessages = (roomId, cb) => {
+  const q = getQueryForMessages(roomId);
+
+  return onSnapshot(
+    q,
+    (querySnapshot) => {
+      cb(querySnapshot);
+    },
+    (err) => {
+      console.log(err);
+    }
+  );
 };

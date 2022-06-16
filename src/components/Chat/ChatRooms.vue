@@ -11,15 +11,21 @@
         >
           <div class="w-full pb-2">
             <div class="flex justify-between">
-              <span class="block ml-2 font-semibold text-gray-600">{{
-                room.displayName
-              }}</span>
-              <span class="block ml-2 text-sm text-gray-600" v-if="lastMessage">
-                {{ getLocaleDate(lastMessage.createdAt) }}
+              <span class="block ml-2 font-semibold text-gray-600">
+                {{ room.displayName || room.email }}
+              </span>
+              <span
+                class="block ml-2 text-sm text-gray-600"
+                v-if="lastMessage(room)"
+              >
+                {{ getLocaleDate(lastMessage(room).createdAt) }}
               </span>
             </div>
-            <span class="block ml-2 text-sm text-gray-600" v-if="lastMessage">
-              {{ lastMessage.text }}
+            <span
+              class="block ml-2 text-sm text-gray-600"
+              v-if="lastMessage(room)"
+            >
+              {{ lastMessage(room).text }}
             </span>
           </div>
         </a>
@@ -34,6 +40,8 @@ import { useUserStore } from "@/stores/user";
 import { getLocaleDate } from "@/helpers/utils";
 import { storeToRefs } from "pinia";
 
+const { lastMessage: lastMessageStore } = storeToRefs(useUserStore());
+
 const props = defineProps({
   rooms: {
     type: Array,
@@ -47,7 +55,10 @@ const props = defineProps({
 
 const emit = defineEmits(["update:activeRoom"]);
 
-const { lastMessage } = storeToRefs(useUserStore());
+const lastMessage = computed(
+  () => (room) =>
+    room.role === "admin" ? lastMessageStore.value : room.lastMessage
+);
 
 const roomCl = computed(() => (uid) => ({
   "bg-gray-100": props.activeRoom.uid === uid,

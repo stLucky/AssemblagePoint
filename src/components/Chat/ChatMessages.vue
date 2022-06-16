@@ -29,7 +29,7 @@
           </svg>
         </button>
         <h2 class="block ml-2 font-bold">
-          {{ activeRoom.displayName }}
+          {{ activeRoom.displayName || activeRoom.email }}
         </h2>
       </div>
       <div
@@ -37,7 +37,19 @@
         style="max-height: calc(100vh - 260px)"
         ref="scrollableBoxEl"
       >
-        <template v-if="messages.length">
+        <div
+          class="w-full h-full flex items-center justify-center"
+          v-if="isLoading"
+        >
+          <TLoader size="2" />
+        </div>
+        <p
+          class="w-full h-full text-gray-600 flex items-center justify-center"
+          v-else-if="isError"
+        >
+          Ошибка
+        </p>
+        <template v-else-if="messages.length">
           <template v-for="(group, key) in groupedMessages" :key="key">
             <time
               :datetime="new Date(+key).toISOString()"
@@ -51,7 +63,7 @@
                 :class="itemCl(message.uid)"
                 v-for="message in group"
                 :key="message.id"
-                :ref="(el) => messagesEl.push(el)"
+                :ref="(el) => el && messagesEl.push(el)"
               >
                 <p
                   class="relative max-w-xl px-4 py-2 text-gray-600 rounded shadow"
@@ -82,15 +94,9 @@
 </template>
 <script setup>
 import { computed, onBeforeUpdate, ref, watch } from "vue";
-import {
-  collection,
-  getFirestore,
-  onSnapshot,
-  orderBy,
-  query,
-} from "firebase/firestore";
-
+import TLoader from "../TLoader.vue";
 import { getTimestampDay, getLocaleDate } from "@/helpers/utils";
+import { subscribeMessages, getMessages } from "@/helpers/firebase";
 
 import { useMediaQuery } from "@/hooks/media-query";
 import { useChat } from "@/hooks/chat";
@@ -102,10 +108,6 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  isVisible: {
-    type: Boolean,
-    default: true,
-  },
 });
 
 const emit = defineEmits(["update:activeRoom"]);
@@ -113,6 +115,8 @@ const emit = defineEmits(["update:activeRoom"]);
 const { userStore, roomId } = useChat(props);
 
 const messages = ref([]);
+const isLoading = ref(false);
+const isError = ref(false);
 
 const groupedMessages = computed(() =>
   messages.value.reduce((result, item) => {
@@ -124,12 +128,31 @@ const groupedMessages = computed(() =>
   }, {})
 );
 
+// получаем все сообщения
+const setMessages = async () => {
+  isLoading.value = true;
+  if (isError.value) isError.value = false;
+
+  try {
+    messages.value = await getMessages(roomId.value);
+  } catch (err) {
+    isError.value = true;
+  } finally {
+    isLoading.value = false;
+  }
+};
+
 // подскролл к последнему сообщению
 const messagesEl = ref([]);
 onBeforeUpdate(() => {
   messagesEl.value = [];
 });
-const lastEl = computed(() => messagesEl.value[messagesEl.value.length - 1]);
+const lastEl = computed(() =>
+  messagesEl.value.find(
+    (item) =>
+      messages.value[messages.value.length - 1].text === item.textContent
+  )
+);
 const scrollableBoxEl = ref(null);
 const scrollToLastEl = () => {
   if (lastEl.value && scrollableBoxEl.value) {
@@ -143,26 +166,30 @@ watch([lastEl, scrollableBoxEl], () => {
   scrollToLastEl();
 });
 
+// основная логика по отображению сообщений
+let unsubscribeMessages;
 watch(
-  () => props.isVisible,
+  () => props.activeRoom && props.activeRoom.uid,
   (val) => {
-    let unsubscribeMessages;
     if (val) {
-      // получаем все сообщения
-      const db = getFirestore();
-      const q = query(
-        collection(db, `users/${roomId.value}/messages`),
-        orderBy("createdAt")
-      );
-      unsubscribeMessages = onSnapshot(q, (querySnapshot) => {
+      setMessages();
+
+      unsubscribeMessages = subscribeMessages(roomId.value, (querySnapshot) => {
         messages.value = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-        userStore.updateLastMessage(messages.value[messages.value.length - 1]);
+
+        const lastMessage = messages.value[messages.value.length - 1];
+        if (!lastMessage) return;
+        userStore.writeLastMessageToUser(roomId.value, lastMessage);
       });
     } else {
-      if (unsubscribeMessages) unsubscribeMessages();
+      if (unsubscribeMessages) {
+        unsubscribeMessages();
+      }
+      messages.value = [];
+      messagesEl.value = [];
     }
   }
 );
