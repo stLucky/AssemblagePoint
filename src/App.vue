@@ -25,8 +25,8 @@ onAuthStateChanged(auth, async (user) => {
     authStore.setAuthorized(true);
 
     if (!userStore.user.role) {
-      const role = await userStore.setUserFromDatabase();
-      if (!role) {
+      const { role, displayName } = await userStore.setUserFromDatabase();
+      if (!role || !displayName) {
         userStore.writeUser();
       }
     }

@@ -43,13 +43,15 @@ export const useUserStore = defineStore("userStore", () => {
 
   const setUserFromDatabase = async () => {
     try {
-      const { role, lastMessage } = await getUserFromDatabase(user.uid);
+      const { role, lastMessage, displayName } = await getUserFromDatabase(
+        user.uid
+      );
       setRole(role);
       if (lastMessage) {
         updateLastMessage(lastMessage);
       }
 
-      return role;
+      return { role, displayName };
     } catch (err) {
       toast.error(Errors.ROLE);
     }
