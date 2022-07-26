@@ -1,14 +1,8 @@
-# assemblage-point
+# AssemblagePoint
+https://assemblage-point-heaojjdqw-stlucky.vercel.app/
 
-This template should help get you started developing with Vue 3 in Vite.
-
-## Recommended IDE Setup
-
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.vscode-typescript-vue-plugin).
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+This is a realtime chat on Vue 3. The firebase API is used as a backend.  
+To work with application, it is enough to register with a valid email.
 
 ## Project Setup
 
