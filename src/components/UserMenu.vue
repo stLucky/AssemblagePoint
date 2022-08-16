@@ -77,7 +77,7 @@
       </div>
 
       <div
-        class="absolute z-10 right-1/2 w-40 py-2 bg-white border rounded shadow-xl hidden group-hover:block translate-x-2/4"
+        class="absolute z-10 right-3/4 sm:right-1/2 w-40 py-2 bg-white border rounded shadow-xl hidden group-hover:block translate-x-2/4"
       >
         <button
           type="button"

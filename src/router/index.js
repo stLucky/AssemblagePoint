@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "@/views/HomeView.vue";
 import RoomView from "@/views/RoomView.vue";
+import NotFoundView from "@/views/NotFoundView.vue";
 import { useAuthStore } from "@/stores/auth";
 
 const router = createRouter({
@@ -19,6 +20,7 @@ const router = createRouter({
         isRequiersAuth: true,
       },
     },
+    { path: "/:pathMatch(.*)*", component: NotFoundView },
   ],
 });
 
