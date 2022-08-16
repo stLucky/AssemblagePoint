@@ -1,5 +1,5 @@
 # AssemblagePoint
-https://assemblage-point-heaojjdqw-stlucky.vercel.app/
+https://assemblage-point.vercel.app
 
 This is a realtime chat on Vue 3. The firebase API is used as a backend.  
 To work with application, it is enough to register with a valid email.
